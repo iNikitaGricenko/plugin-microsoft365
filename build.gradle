@@ -25,7 +25,7 @@ sourceCompatibility = 17
 targetCompatibility = 17
 
 group "io.kestra.plugin"
-description 'Plugin template for Kestra'
+description 'Plugin OneDrive for Kestra'
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
@@ -46,6 +46,11 @@ dependencies {
     compileOnly "io.micronaut:micronaut-inject"
     compileOnly "io.micronaut.validation:micronaut-validation"
     compileOnly "io.micronaut:micronaut-jackson-databind"
+
+    // Include the sdk as a dependency
+    compileOnly 'com.microsoft.graph:microsoft-graph:5.13.0'
+    // This dependency is only needed if you are using the TokenCredentialAuthProvider
+    compileOnly 'com.azure:azure-identity:1.10.2'
 
     // kestra
     compileOnly group: "io.kestra", name: "core", version: kestraVersion
@@ -90,6 +95,11 @@ dependencies {
     testImplementation group: "io.kestra", name: "runner-memory", version: kestraVersion
     testImplementation group: "io.kestra", name: "storage-local", version: kestraVersion
 
+    // Include the sdk as a dependency
+    testImplementation 'com.microsoft.graph:microsoft-graph-core:2.0.20'
+    // This dependency is only needed if you are using the TokenCredentialAuthProvider
+    testImplementation 'com.azure:azure-identity:1.10.2'
+
     // test
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.hamcrest:hamcrest:2.2"
@@ -114,7 +124,7 @@ jar {
     manifest {
         attributes(
                 "X-Kestra-Name": project.name,
-                "X-Kestra-Title": "Template",
+                "X-Kestra-Title": "OneDrive",
                 "X-Kestra-Group": project.group + ".templates",
                 "X-Kestra-Description": project.description,
                 "X-Kestra-Version": project.version
