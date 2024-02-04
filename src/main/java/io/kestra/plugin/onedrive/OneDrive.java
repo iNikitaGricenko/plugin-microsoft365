@@ -1,17 +1,20 @@
 package io.kestra.plugin.onedrive;
 
 import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.models.DriveSearchParameterSet;
+import com.microsoft.graph.requests.DriveSearchCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
 import io.kestra.core.storages.FileAttributes;
-import io.kestra.core.storages.Storage;
 import io.kestra.core.storages.StorageInterface;
 import io.micronaut.core.annotation.Introspected;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import okhttp3.Request;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
@@ -20,7 +23,7 @@ import java.util.List;
 public class OneDrive implements StorageInterface {
 
     @Inject
-    GraphServiceClient client;
+    GraphServiceClient<Request> client;
 
     @Inject
     OneDriveConfig config;
@@ -38,7 +41,19 @@ public class OneDrive implements StorageInterface {
 
     @Override
     public List<URI> allByPrefix(String tenantId, URI prefix, boolean includeDirectories) throws IOException {
-        return null;
+        DriveSearchCollectionPage driveSearchCollectionPage = client
+            .me()
+            .drive()
+            .search(DriveSearchParameterSet.newBuilder().withQ(getPath(prefix)).build())
+            .buildRequest()
+            .get();
+
+        List<URI> result = new ArrayList<URI>();
+        for (DriveItem driveItem : driveSearchCollectionPage.getCurrentPage()) {
+            result.add(URI.create(driveItem.webUrl));
+        }
+
+        return result;
     }
 
     @Override
@@ -56,7 +71,7 @@ public class OneDrive implements StorageInterface {
         DriveItem driveItem = client.me()
             .drive()
             .root()
-            .itemWithPath(uri.getPath())
+            .itemWithPath(getPath(uri))
             .content()
             .buildRequest()
             .put(data.readAllBytes());
@@ -68,7 +83,7 @@ public class OneDrive implements StorageInterface {
     public boolean delete(String tenantId, URI uri) throws IOException {
         DriveItem delete = client.me()
             .drive()
-            .items(uri.getPath())
+            .items(getPath(uri))
             .buildRequest()
             .delete();
 
@@ -94,6 +109,26 @@ public class OneDrive implements StorageInterface {
     @Override
     public List<URI> deleteByPrefix(String tenantId, URI storagePrefix) throws IOException {
         return null;
+    }
+
+    private String getPath(URI uri) {
+        if (uri == null) {
+            uri = URI.create("/");
+        }
+
+        parentTraversalValidation(uri);
+        String path = uri.getPath();
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
+        return path;
+    }
+
+    private void parentTraversalValidation(URI uri) {
+        if (uri.toString().contains("..")) {
+            throw new IllegalArgumentException("File should be accessed with their full path and not using relative '..' path.");
+        }
     }
 
 }
