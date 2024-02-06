@@ -48,7 +48,7 @@ dependencies {
     compileOnly "io.micronaut:micronaut-jackson-databind"
 
     // Include the sdk as a dependency
-    compileOnly 'com.microsoft.graph:microsoft-graph:5.13.0'
+    compileOnly 'com.microsoft.graph:microsoft-graph:5.80.0'
     // This dependency is only needed if you are using the TokenCredentialAuthProvider
     compileOnly 'com.azure:azure-identity:1.10.2'
 
@@ -96,7 +96,7 @@ dependencies {
     testImplementation group: "io.kestra", name: "storage-local", version: kestraVersion
 
     // Include the sdk as a dependency
-    testImplementation 'com.microsoft.graph:microsoft-graph-core:2.0.20'
+    testImplementation 'com.microsoft.graph:microsoft-graph:5.80.0'
     // This dependency is only needed if you are using the TokenCredentialAuthProvider
     testImplementation 'com.azure:azure-identity:1.10.2'
 

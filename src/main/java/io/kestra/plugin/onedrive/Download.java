@@ -13,11 +13,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import okhttp3.Request;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -61,13 +59,21 @@ public class Download extends AbstractOneDrive implements RunnableTask<Download.
                 .buildRequest()
                 .get();
 
+        return Output
+            .builder()
+            .path(item.name)
+            .uri(runContext.storage().putFile(download(runContext, client, item)))
+            .build();
+    }
+
+    static File download(RunContext runContext, GraphServiceClient<Request> client, DriveItem item) throws IOException {
+        File tempFile = runContext.tempFile(runContext.fileExtension(item.file.oDataType)).toFile();
+
         DriveItemContentStreamRequest request = client.me()
             .drive()
             .items(item.id)
             .content()
             .buildRequest();
-
-        File tempFile = runContext.tempFile(runContext.fileExtension(item.file.oDataType)).toFile();
 
         try (
             InputStream inputStream = request.get();
@@ -75,12 +81,7 @@ public class Download extends AbstractOneDrive implements RunnableTask<Download.
         ){
             inputStream.transferTo(outputStream);
         }
-
-        return Output
-            .builder()
-            .path(item.name)
-            .uri(runContext.storage().putFile(tempFile))
-            .build();
+        return tempFile;
     }
 
     @Builder

@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
 
@@ -46,7 +45,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 )
 public class Downloads extends AbstractOneDrive implements RunnableTask<Downloads.Output> {
 
-    private String name;
+    private String from;
 
     @Override
     public Downloads.Output run(RunContext runContext) throws Exception {
@@ -56,7 +55,7 @@ public class Downloads extends AbstractOneDrive implements RunnableTask<Download
             .me()
             .drive()
             .root()
-            .search(DriveItemSearchParameterSet.newBuilder().withQ("name:" + name).build())
+            .search(DriveItemSearchParameterSet.newBuilder().withQ("name:" + from).build())
             .buildRequest()
             .get();
 

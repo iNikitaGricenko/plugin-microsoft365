@@ -11,10 +11,7 @@ import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import okhttp3.Request;
 
@@ -68,10 +65,10 @@ public abstract class AbstractOneDrive extends Task {
     @Schema(
         title = ""
     )
-    @PluginProperty
+    @Builder.Default
     List<String> scopes = List.of("User.Read");
 
-    protected GraphServiceClient<Request> client(RunContext runContext) throws IllegalVariableEvaluationException {
+    GraphServiceClient<Request> client(RunContext runContext) throws IllegalVariableEvaluationException {
         return GraphServiceClient.builder()
             .authenticationProvider(this.credentials(runContext))
             .buildClient();
