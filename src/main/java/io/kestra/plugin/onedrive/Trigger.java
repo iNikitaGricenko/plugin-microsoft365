@@ -164,10 +164,7 @@ public class Trigger extends AbstractTrigger implements PollingTriggerInterface,
         java.util.List<URI> list = run.getItems()
             .stream()
             .map(throwFunction(item -> {
-                URI uri = runContext.storage().putFile(
-                    Download.download(runContext, client, item)
-                                                      );
-
+                URI uri = runContext.storage().putFile(Download.download(runContext, client, item));
                 return URI.create(item.webUrl);
             }))
             .toList();

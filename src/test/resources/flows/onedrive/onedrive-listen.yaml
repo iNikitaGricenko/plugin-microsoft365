@@ -1,0 +1,19 @@
+id: onedrive-listen
+namespace: io.kestra.tests
+
+triggers:
+  - id: watch
+    type: io.kestra.plugin.onedrive.Trigger
+    clientId: ""
+    clientSecret: ""
+    tenantId: ""
+    redirectUri: ""
+    from: "onedrive://unit-test/tasks/onedrive/upload/trigger/"
+    durationAmount: 10
+    durationUnit: SECONDS
+    to: "onedrive://unit-test/tasks/onedrive/move/"
+
+tasks:
+  - id: end
+    type: io.kestra.core.tasks.debugs.Return
+    format: "{{task.id}} > {{taskrun.startDate}}"

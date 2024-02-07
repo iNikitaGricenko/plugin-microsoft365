@@ -61,7 +61,7 @@ public class Upload extends AbstractOneDrive implements RunnableTask<Upload.Outp
 
         try (InputStream data = runContext.storage().getFile(from)) {
             DriveItem upload = new DriveItem();
-            upload.name = new File(to).getName();
+            upload.name = new File(to.getPath()).getName();
             upload.file = new com.microsoft.graph.models.File();
 
             JsonObject renameProperty = new JsonObject();
@@ -69,7 +69,8 @@ public class Upload extends AbstractOneDrive implements RunnableTask<Upload.Outp
 
             upload.additionalDataManager().put("@microsoft.graph.conflictBehavior", renameProperty);
 
-            DriveItem driveItem = client.me()
+            DriveItem driveItem = client
+                .me()
                 .drive()
                 .root()
                 .itemWithPath(getPath(to))

@@ -29,6 +29,18 @@ public class OneDriveTestUtils {
     @Value("${kestra.tasks.onedrive.directory}")
     private String directory;
 
+    @Value("${kestra.tasks.onedrive.clientId}")
+    private String clientId;
+
+    @Value("${kestra.tasks.onedrive.clientSecret}")
+    private String clientSecret;
+
+    @Value("${kestra.tasks.onedrive.tenantId}")
+    private String tenantId;
+
+    @Value("${kestra.tasks.onedrive.redirectUrl}")
+    private String redirectUrl;
+
     Upload.Output upload(String out) throws Exception {
         return this.upload(out, "application.yml");
     }
@@ -46,7 +58,11 @@ public class OneDriveTestUtils {
             .id(UploadTest.class.getSimpleName())
             .type(Upload.class.getName())
             .from(source.toString())
-            .to("onedrive://{{inputs.bucket}}/tasks/onderive/upload/" + out + "." + FilenameUtils.getExtension(resource))
+            .clientId(this.clientId)
+            .clientSecret(this.clientSecret)
+            .tenantId(this.tenantId)
+            .redirectUrl(this.redirectUrl)
+            .to("onedrive://{{inputs.directory}}/tasks/onderive/upload/" + out + "." + FilenameUtils.getExtension(resource))
             .build();
 
         return task.run(runContext(task));

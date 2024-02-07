@@ -1,10 +1,14 @@
 package io.kestra.plugin.onedrive;
 
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.core.util.ClientOptions;
 import com.azure.identity.*;
 import com.google.common.base.Strings;
+import com.microsoft.aad.msal4j.*;
 import com.microsoft.graph.authentication.IAuthenticationProvider;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
+import com.microsoft.graph.http.IHttpRequest;
 import com.microsoft.graph.requests.GraphServiceClient;
 import io.kestra.core.exceptions.IllegalVariableEvaluationException;
 import io.kestra.core.models.annotations.PluginProperty;
@@ -15,9 +19,18 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import okhttp3.Request;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @SuperBuilder
 @ToString
@@ -33,7 +46,8 @@ public abstract class AbstractOneDrive extends Task {
     String clientId;
 
     @Schema(
-        title = ""
+        title = "Client secret",
+        description = "Ensure that value is Client Secret Value and not Client Secret ID"
     )
     @PluginProperty(dynamic = true)
     String clientSecret;
@@ -66,7 +80,7 @@ public abstract class AbstractOneDrive extends Task {
         title = ""
     )
     @Builder.Default
-    List<String> scopes = List.of("User.Read");
+    List<String> scopes = List.of("https://graph.microsoft.com/.default");
 
     GraphServiceClient<Request> client(RunContext runContext) throws IllegalVariableEvaluationException {
         return GraphServiceClient.builder()
@@ -92,7 +106,7 @@ public abstract class AbstractOneDrive extends Task {
         } else if (!Strings.isNullOrEmpty(tenantId) && !Strings.isNullOrEmpty(runContext.render(this.pemCertificate))) {
             credentials = getClientCertificateCredential(runContext);
         } else {
-            credentials = getClientSecretCredential(runContext);
+            return new TokenCredentialAuthProvider(scopes, getClientSecretCredential(runContext));
         }
 
         if (scopes == null || credentials == null) {
@@ -122,7 +136,8 @@ public abstract class AbstractOneDrive extends Task {
         return new ClientSecretCredentialBuilder()
             .clientId(runContext.render(this.clientId))
             .clientSecret(runContext.render(this.clientSecret))
-            .tenantId(runContext.render(this.tenantId)).build();
+            .tenantId(runContext.render(this.tenantId))
+            .build();
     }
 
 
